@@ -1,0 +1,11 @@
+C:\Users\Chad Ghostal\source\repos\StatCounter\StatCounter\obj\Debug\StatCounter.csprojAssemblyReference.cache
+C:\Users\Chad Ghostal\source\repos\StatCounter\StatCounter\obj\Debug\StatCounter.Properties.Resources.resources
+C:\Users\Chad Ghostal\source\repos\StatCounter\StatCounter\obj\Debug\StatCounter.csproj.GenerateResource.cache
+C:\Users\Chad Ghostal\source\repos\StatCounter\StatCounter\obj\Debug\StatCounter.csproj.CoreCompileInputs.cache
+C:\Users\Chad Ghostal\source\repos\StatCounter\StatCounter\bin\Debug\StatCounter.exe.config
+C:\Users\Chad Ghostal\source\repos\StatCounter\StatCounter\bin\Debug\StatCounter.exe
+C:\Users\Chad Ghostal\source\repos\StatCounter\StatCounter\bin\Debug\StatCounter.pdb
+C:\Users\Chad Ghostal\source\repos\StatCounter\StatCounter\obj\Debug\StatCounter.exe
+C:\Users\Chad Ghostal\source\repos\StatCounter\StatCounter\obj\Debug\StatCounter.pdb
+C:\Users\Chad Ghostal\source\repos\StatCounter\StatCounter\obj\Debug\StatCounter.csproj.ResolveComReference.cache
+C:\Users\Chad Ghostal\source\repos\StatCounter\StatCounter\obj\Debug\StatCounter.frmMain.resources
