@@ -217,6 +217,11 @@ namespace StatCounter
                     {
                         MessageBox.Show("ERROR: Files are not from the same run.");
                     }
+                    fileCount = 0;
+                    file1.isVoid = true;
+                    file2.isVoid = true;
+                    tbFile1.Text = "";
+                    tbFile2.Text = "";
                 }
 
                 
@@ -271,13 +276,5 @@ namespace StatCounter
             this.excel.Quit();
         }
 
-        //public void SetVars(string path, int sheet)
-        //{
-        //    this.path = path;
-        //    wb = excel.Workbooks.Open(path);
-        //    ws = wb.Worksheets[sheet];
-        //
-         //   isVoid = false;
-        //}
     }
 }

@@ -81,7 +81,7 @@
             this.Controls.Add(this.btnLoadFile);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "frmMain";
-            this.Text = "Spreadsheet Counter";
+            this.Text = "Spreadsheet Counter v2";
             this.ResumeLayout(false);
             this.PerformLayout();
 
