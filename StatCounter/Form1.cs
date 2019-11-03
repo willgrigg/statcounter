@@ -2,40 +2,111 @@
 using System.Windows.Forms;
 using Microsoft.Office.Interop.Excel;
 using _Excel = Microsoft.Office.Interop.Excel;
+using System.IO;
 
 namespace StatCounter
 {
 
     public partial class frmMain : Form
     {
+        //This is a boolean that stores whether or not there is a reference file. It will be assigned a value 
+        //after the form is initialized.
+        public bool referenceFileExists;
+
         public frmMain()
         {
             InitializeComponent();
 
+            //TODO: What I'd like to do here is access a file that is used as a reference point.
+            //This file would contain data collected from a previous file, so that more 
+            //accurate statistics can be gathered. If no reference file exists, the first time a file
+            //is loaded, that file will become the reference point. After a reference file is generated,
+            //the next file loaded will become the reference file. Does that make sense??
+            try
+            {
+                using (var fileStream = new FileStream("ref.txt", FileMode.Open))
+                {
+                    referenceFileExists = true;
+                }
+            }
+            catch
+            {
+                MessageBox.Show("There appears to be no reference file. Load a file to create one.");
+                referenceFileExists = false;
+            }
         }
 
         OpenFileDialog ofd = new OpenFileDialog();
 
-        int fileCount = 0;
-
-        Excel file1 = new Excel();
-        Excel file2;
-
-        public int volBFX;
-        public int quantityX;
-        public int minLengthX;
-        public int nameX;
-
-        private void GetXLocations(Excel file)
+        private void btnOpen_Click(object sender, EventArgs e)
         {
-            volBFX = 0;
-            quantityX = 0;
-            minLengthX = 0;
-            nameX = 0;
-
-            for (int i = 5; (volBFX * quantityX * minLengthX * nameX) == 0; i++)
+            if (ofd.ShowDialog() == DialogResult.OK)
             {
-                string name = file.ReadCell(2, i);
+                lblStats.Text = "";
+
+                tbFileName.Text = ofd.FileName;
+                Excel excel = new Excel(ofd.FileName, 1);
+
+
+                //declaring these values and instantiating them all as 0
+                double solids, cutstock, fj, core, backrip, waste;
+                double percentTotal = 0;
+                solids = cutstock = fj = core = backrip = waste = percentTotal;
+
+                int backrip_quantity = 0;
+
+                lblStats.Text = "LOADING...";
+
+                //getting stats from the excel file
+                getFileStats(ref solids, ref cutstock, ref fj, ref core, ref backrip, 
+                    ref backrip_quantity, excel);
+
+                /* --------------
+                 * I no longer want the waste%. I want the waste bf volume
+                 * 
+                waste = Double.Parse(excel.ReadCell(46, 3)); // this is the waste%
+                */
+
+                waste = Double.Parse(excel.ReadCell(28, 3)); // this is the waste bf volume
+
+                percentTotal = solids + cutstock + fj + core + backrip + waste;
+
+                //displays the results onscreen
+                printToScreen(waste, solids, cutstock, fj, core, backrip, backrip_quantity, percentTotal);
+
+                excel.Close();
+            }
+        }
+
+        //takes the stats and displays them in a label
+        void printToScreen(double waste, double solids, double cutstock, double fj, 
+            double core, double backrip, int backrip_quantity, double percentTotal)
+        {
+            lblStats.Text = "Waste: " + waste.ToString() + "%" + "\nSolids: " + solids.ToString() + "%" +
+                    "\nCutstock: " + cutstock.ToString() + "%" +
+                     "\nFJ: " + fj.ToString() + "%" + "\nCore: " + core.ToString() + "%" + "\nBackrip: " + backrip.ToString() + "%" +
+                    "\nBackrip piece count: " + backrip_quantity.ToString() + " pcs" + "\n\nTOTAL: " + percentTotal.ToString() + "%";
+        }
+
+        //this gets the stats from an excel file through reference variables
+        void getFileStats(ref double solids, ref double cutstock, ref double fj, ref double core, 
+            ref double backrip, ref int backrip_quantity, Excel excel)
+        {
+
+            //ensuring that these are all set to zero
+            solids = cutstock = fj = core = backrip = 0;
+
+            int volPercentX = 0; //volume % x location
+            int quantityX = 0;   //piece count x location
+            int minLengthX = 0;  //min length x location
+            int nameX = 0;       //name x location
+
+            // this will run until they are all non-zero values. retrieves the x,y coordinates of the stats.
+            // may have to improve this. the only reason i'm doing it this way is because the locations of
+            // attributes can change. doesn't seem to take too long. 
+            for (int i = 5; (volPercentX * quantityX * minLengthX * nameX) == 0; i++)
+            {
+                string name = excel.ReadCell(2, i);
 
                 if (name == "Name")
                 {
@@ -49,186 +120,59 @@ namespace StatCounter
                 {
                     quantityX = i;
                 }
+
                 else if (name == "Volume\n[ bf ] ")
                 {
-                    volBFX = i;
+                    volPercentX = i;
                 }
+
+                //This section is commented out because it is using my previous (antiquated) method.
+                //The method just above is the new method. 
+                //I don't think I will use this one again, but I will leave it here as a reminder to myself
+                /*
+                else if (name == "Volume\n[ % ] ")
+                {
+                      volPercentX = i;
+                }
+                */
+
             }
-        }
-        private void BtnOpen_Click(object sender, EventArgs e)
-        {
 
-            if (ofd.ShowDialog() == DialogResult.OK)
+            //this iterates through the actual values for each of the attributes until it reaches the end
+            for (int i = 3; excel.ReadCell(i, minLengthX) != ""; i++)
             {
-                
-                if (tbFile1.Text == "")
-                {
-                    lblStats.Text = "";
-                    tbFile1.Text = ofd.FileName;
-                }
-                else
-                {
-                    tbFile2.Text = ofd.FileName;
-                }
+                double min_length = Double.Parse(excel.ReadCell(i, minLengthX));
 
-                if (file1.isVoid)
-                {
-                    file1 = new Excel(ofd.FileName, 1);
-                }
-                else
-                {
-                    file2 = new Excel(ofd.FileName, 1);
-                }
+                double volume = Double.Parse(excel.ReadCell(i, volPercentX));
 
-                fileCount += 1;
-
-                if (fileCount == 2)
+                if (min_length < 8)
                 {
-                    string run1 = file1.ReadCell(3, 2);
-                    string run2 = file2.ReadCell(3, 2);
-
-                    if (run1 == run2) //verifies that both files are part of the same run
+                    string name = excel.ReadCell(i, nameX);
+                    if (name.Contains("Core"))
                     {
-                        double solids1 = 0;
-                        double cutstock1 = 0;
-                        double fj1 = 0;
-                        double core1 = 0;
-                        double backrip1 = 0;
-                        double waste1 = 0;
-
-                        double solids2 = 0;
-                        double cutstock2 = 0;
-                        double fj2 = 0;
-                        double core2 = 0;
-                        double backrip2 = 0;
-                        double waste2 = 0;
-
-                        double totalBF1 = 0;
-                        double totalBF2 = 0;
-
-                        int backrip_quantity1 = 0;
-                        int backrip_quantity2 = 0;
-
-                        lblStats.Text = "LOADING...";
-
-                        GetXLocations(file1); //gets the locations of each of the columns from file 1
-
-                        for (int i = 3; file1.ReadCell(i, 8) != ""; i++)
-                        {
-                            double min_length = Double.Parse(file1.ReadCell(i, minLengthX));
-
-                            double volume;
-                            volume = Double.Parse(file1.ReadCell(i, volBFX));
-
-                            if (min_length < 8)
-                            {
-                                string name = file1.ReadCell(i, nameX);
-                                if (name.Contains("Core"))
-                                {
-                                    core1 += volume;
-                                }
-                                else if (name.Contains("Backrip"))
-                                {
-                                    backrip1 += volume;
-                                    backrip_quantity1 += int.Parse(file1.ReadCell(i, quantityX));
-                                }
-                                else
-                                {
-                                    fj1 += volume;
-                                }
-                            }
-                            else if (min_length <= 69 && min_length > 7)
-                            {
-                                cutstock1 += volume;
-                            }
-                            else if (min_length <= 192 && min_length >= 69.5)
-                            {
-                                solids1 += volume;
-                            }
-                        }
-
-                        waste1 = Double.Parse(file1.ReadCell(28, 3)); // this is the waste bf
-                        totalBF1 = Double.Parse(file1.ReadCell(20, 3)); // total BF
-                        
-
-                        GetXLocations(file2); // gets the locations of each of the columns of file 2
-
-                        for (int i = 3; file2.ReadCell(i, 8) != ""; i++)
-                        {
-                            double min_length = Double.Parse(file2.ReadCell(i, minLengthX));
-
-                            double volume;
-                            volume = Double.Parse(file2.ReadCell(i, volBFX));
-
-                            if (min_length < 8)
-                            {
-                                string name = file2.ReadCell(i, nameX);
-                                if (name.Contains("Core"))
-                                {
-                                    core2 += volume;
-                                }
-                                else if (name.Contains("Backrip"))
-                                {
-                                    backrip2 += volume;
-                                    backrip_quantity2 += int.Parse(file2.ReadCell(i, quantityX));
-                                }
-                                else
-                                {
-                                    fj2 += volume;
-                                }
-                            }
-                            else if (min_length <= 69 && min_length > 7)
-                            {
-                                cutstock2 += volume;
-                            }
-                            else if (min_length <= 192 && min_length >= 69.5)
-                            {
-                                solids2 += volume;
-                            }
-                        }
-
-                        waste2 = Double.Parse(file2.ReadCell(28, 3)); // this is the waste BF
-                        totalBF2 = Double.Parse(file2.ReadCell(20, 3)); // total BF
-
-                        totalBF2 = totalBF2 - totalBF1;
-
-                        double percentTotal = ((solids2 - solids1) + (cutstock2 - cutstock1) + (fj2 - fj1) + (core2 - core1) + (backrip2 - backrip1) + (waste2 - waste1)) / totalBF2;
-                        // BE CAREFUL: REMEMBER -- this is where these are converted from BF to their percentages out of the total.
-
-                        solids2 = (solids2 - solids1)/totalBF2;
-                        cutstock2 = (cutstock2 - cutstock1)/totalBF2;
-                        fj2 = (fj2 - fj1)/(totalBF2);
-                        core2 = (core2 - core1)/totalBF2;
-                        backrip2 = (backrip2 - backrip1)/totalBF2;
-                        waste2 = (waste2 - waste1) / totalBF2;
-
-
-                        backrip_quantity2 = backrip_quantity2 - backrip_quantity1;
-
-                        lblStats.Text = "Waste: " + waste2.ToString("P") + "\nSolids: " + solids2.ToString("P") +
-                            "\nCutstock: " + cutstock2.ToString("P") + "\nFJ: " + fj2.ToString("P") + "\nCore: " + core2.ToString("P")+ 
-                            "\nBackrip: " + backrip2.ToString("P") + "\nBackrip piece count: " + backrip_quantity2.ToString() + " pcs" + 
-                            "\n\nTOTAL: " + percentTotal.ToString("P");
-
-                        file1.Close();
-                        file2.Close();
+                        core += volume;
+                    }
+                    else if (name.Contains("Backrip"))
+                    {
+                        backrip += volume;
+                        backrip_quantity += int.Parse(excel.ReadCell(i, quantityX));
                     }
                     else
                     {
-                        MessageBox.Show("ERROR: Files are not from the same run.");
+                        fj += volume;
                     }
-                    fileCount = 0;
-                    file1.isVoid = true;
-                    file2.isVoid = true;
-                    tbFile1.Text = "";
-                    tbFile2.Text = "";
                 }
-
-                
+                else if (min_length <= 69 && min_length > 7)
+                {
+                    cutstock += volume;
+                }
+                else if (min_length <= 192 && min_length >= 69.5)
+                {
+                    solids += volume;
+                }
             }
         }
     }
-
     class Excel
     {
         string path = "";
@@ -236,25 +180,11 @@ namespace StatCounter
         Workbook wb;
         Worksheet ws;
 
-        public bool isVoid;
-
         public Excel(string path, int sheet)
         { 
             this.path = path;
             wb = excel.Workbooks.Open(path);
             ws = wb.Worksheets[sheet];
-
-            isVoid = false;
-        }
-
-        public Excel()
-        {
-            this.path = null;
-            wb = null;
-            ws = null;
-
-            isVoid = true;
-
         }
 
         public string ReadCell(int i, int j)
@@ -275,6 +205,5 @@ namespace StatCounter
             this.excel.ActiveWorkbook.Close(0);
             this.excel.Quit();
         }
-
     }
 }
