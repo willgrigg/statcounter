@@ -32,6 +32,7 @@
             this.btnOpen = new System.Windows.Forms.Button();
             this.tbFileName = new System.Windows.Forms.TextBox();
             this.lblStats = new System.Windows.Forms.Label();
+            this.lblBackripPieces = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnOpen
@@ -61,11 +62,23 @@
             this.lblStats.Size = new System.Drawing.Size(0, 32);
             this.lblStats.TabIndex = 2;
             // 
+            // lblBackripPieces
+            // 
+            this.lblBackripPieces.AutoSize = true;
+            this.lblBackripPieces.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblBackripPieces.ForeColor = System.Drawing.Color.Black;
+            this.lblBackripPieces.Location = new System.Drawing.Point(191, 74);
+            this.lblBackripPieces.Name = "lblBackripPieces";
+            this.lblBackripPieces.Size = new System.Drawing.Size(150, 29);
+            this.lblBackripPieces.TabIndex = 3;
+            this.lblBackripPieces.Text = "Still buggy!";
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(711, 450);
+            this.Controls.Add(this.lblBackripPieces);
             this.Controls.Add(this.lblStats);
             this.Controls.Add(this.tbFileName);
             this.Controls.Add(this.btnOpen);
@@ -82,6 +95,7 @@
         private System.Windows.Forms.Button btnOpen;
         private System.Windows.Forms.TextBox tbFileName;
         private System.Windows.Forms.Label lblStats;
+        private System.Windows.Forms.Label lblBackripPieces;
     }
 }
 
